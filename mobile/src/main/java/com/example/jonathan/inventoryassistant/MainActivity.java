@@ -25,10 +25,8 @@ import java.util.Arrays;
  */
 
 public class MainActivity extends Activity {
-
     public static final String MIME_TEXT_PLAIN = "text/plain";
     public static final String TAG = "NfcDemo";
-
     private TextView mTextView;
     private NfcAdapter mNfcAdapter;
 
@@ -41,7 +39,6 @@ public class MainActivity extends Activity {
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 
         if (mNfcAdapter == null) {
-            // Stop here, we definitely need NFC
             Toast.makeText(this, "This device doesn't support NFC.", Toast.LENGTH_LONG).show();
             finish();
             return;
@@ -169,19 +166,15 @@ public class MainActivity extends Activity {
     }
 
     private class NdefReaderTask extends AsyncTask<Tag, Void, String> {
-
         @Override
         protected String doInBackground(Tag... params) {
             Tag tag = params[0];
-
             Ndef ndef = Ndef.get(tag);
             if (ndef == null) {
-                // NDEF is not supported by this Tag.
                 return null;
             }
 
             NdefMessage ndefMessage = ndef.getCachedNdefMessage();
-
             NdefRecord[] records = ndefMessage.getRecords();
             for (NdefRecord ndefRecord : records) {
                 if (ndefRecord.getTnf() == NdefRecord.TNF_WELL_KNOWN && Arrays.equals(ndefRecord.getType(), NdefRecord.RTD_TEXT)) {
@@ -192,7 +185,6 @@ public class MainActivity extends Activity {
                     }
                 }
             }
-
             return null;
         }
 
@@ -206,7 +198,6 @@ public class MainActivity extends Activity {
          * bit_6 reserved for future use, must be 0
          * bit_5..0 length of IANA language code
          */
-
             byte[] payload = record.getPayload();
 
             // Get the Text Encoding
@@ -214,9 +205,6 @@ public class MainActivity extends Activity {
 
             // Get the Language Code
             int languageCodeLength = payload[0] & 0063;
-
-            // String languageCode = new String(payload, 1, languageCodeLength, "US-ASCII");
-            // e.g. "en"
 
             // Get the Text
             return new String(payload, languageCodeLength + 1, payload.length - languageCodeLength - 1, textEncoding);
