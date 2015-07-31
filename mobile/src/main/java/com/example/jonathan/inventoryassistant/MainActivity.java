@@ -20,7 +20,6 @@ import android.widget.Toast;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
-
 /** Source attribution: Lots of NFC help from this tutorial:
  *  http://code.tutsplus.com/tutorials/reading-nfc-tags-with-android--mobile-17278
  */
@@ -53,6 +52,11 @@ public class MainActivity extends Activity {
             mTextView.setText(R.string.explanation);
         }
         handleIntent(getIntent());
+
+        Intent i = new Intent();
+        i.setClass(this, NfcWriteTest.class);
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(i);
     }
 
     @Override
