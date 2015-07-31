@@ -39,6 +39,11 @@
             android:enabled="true"
             android:exported="true" >
         </service>
+
+        <activity
+            android:name=".MakeNewGrp"
+            android:label="@string/title_activity_make_new_grp" >
+        </activity>
     </application>
 
 </manifest>
