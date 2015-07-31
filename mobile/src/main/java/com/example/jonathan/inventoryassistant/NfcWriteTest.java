@@ -2,7 +2,6 @@ package com.example.jonathan.inventoryassistant;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
