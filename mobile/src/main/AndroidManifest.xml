@@ -33,6 +33,12 @@
             android:name=".NfcWriteTest"
             android:label="@string/title_activity_nfc_write_test" >
         </activity>
+
+        <service
+            android:name=".MobileListenerService"
+            android:enabled="true"
+            android:exported="true" >
+        </service>
     </application>
 
 </manifest>
