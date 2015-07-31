@@ -30,11 +30,9 @@ import android.widget.Toast;
  */
 
 public class NfcWriteTest extends Activity {
-    private static final String TAG = "NFCWriteTag";
     private NfcAdapter mNfcAdapter;
     private IntentFilter[] mWriteTagFilters;
     private PendingIntent mNfcPendingIntent;
-    private boolean silent=false;
     private boolean writeProtect = false;
     private Context context;
 
@@ -47,9 +45,6 @@ public class NfcWriteTest extends Activity {
         mNfcPendingIntent = PendingIntent.getActivity(this, 0, new Intent(this,
                 getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP), 0);
         IntentFilter discovery=new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED);
-        IntentFilter ndefDetected = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
-        IntentFilter techDetected = new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED);
-        // Intent filters for writing to a tag
         mWriteTagFilters = new IntentFilter[] { discovery };
     }
 
@@ -99,19 +94,15 @@ public class NfcWriteTest extends Activity {
             // validate that this tag can be written
             Tag detectedTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
             if(supportedTechs(detectedTag.getTechList())) {
-                // check if tag is writable (to the extent that we can
                 if(writableTag(detectedTag)) {
-                    //writeTag here
-                    WriteResponse wr = writeTag(getTagAsNdef(), detectedTag);
+                    WriteResponse wr = writeTag(getTagAsNdef(new String ("hot dogs")), detectedTag);
                     String message = (wr.getStatus() == 1? "Success: " : "Failed: ") + wr.getMessage();
                     Toast.makeText(context,message,Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(context,"This tag is not writable",Toast.LENGTH_SHORT).show();
-                    //Sounds.PlayFailed(context, silent);
                 }
             } else {
                 Toast.makeText(context,"This tag type is not supported",Toast.LENGTH_SHORT).show();
-                //Sounds.PlayFailed(context, silent);
             }
         }
     }
@@ -141,7 +132,7 @@ public class NfcWriteTest extends Activity {
                 ndef.connect();
 
                 if (!ndef.isWritable()) {
-                    return new WriteResponse(0,"Tag is read-only");
+                    return new WriteResponse(0, "Tag is read-only");
                 }
                 if (ndef.getMaxSize() < size) {
                     mess = "Tag capacity is " + ndef.getMaxSize() + " bytes, message is " + size
@@ -218,7 +209,6 @@ public class NfcWriteTest extends Activity {
                 ndef.connect();
                 if (!ndef.isWritable()) {
                     Toast.makeText(context,"Tag is read-only.",Toast.LENGTH_SHORT).show();
-                    //Sounds.PlayFailed(context, silent);
                     ndef.close();
                     return false;
                 }
@@ -227,29 +217,18 @@ public class NfcWriteTest extends Activity {
             }
         } catch (Exception e) {
             Toast.makeText(context,"Failed to read tag",Toast.LENGTH_SHORT).show();
-            //Sounds.PlayFailed(context, silent);
         }
         return false;
     }
 
-    private NdefMessage getTagAsNdef() {
-        boolean addAAR = false;
-        String uniqueId = "tapwise.com";
-        byte[] uriField = uniqueId.getBytes(Charset.forName("US-ASCII"));
-        byte[] payload = new byte[uriField.length + 1];              //add 1 for the URI Prefix
-        payload[0] = 0x01;                                      	//prefixes http://www. to the URI
-
-        System.arraycopy(uriField, 0, payload, 1, uriField.length);  //appends URI to payload
-        NdefRecord rtdUriRecord = new NdefRecord(
-                NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_URI, new byte[0], payload);
-
-        if(addAAR) {
-            // note:  returns AAR for different app (nfcreadtag)
-            return new NdefMessage(new NdefRecord[] {
-                    rtdUriRecord, NdefRecord.createApplicationRecord("com.tapwise.nfcreadtag")
-            });
-        } else {
-            return new NdefMessage(new NdefRecord[] {rtdUriRecord});
-        }
+    private NdefMessage getTagAsNdef(String textToWrite) {
+        byte[] text = textToWrite.getBytes(Charset.forName("US-ASCII"));
+        byte[] payload = new byte[text.length + 3];
+        payload[0] = 0x02; // 0x02 = UTF8
+        payload[1] = 'e'; // Language = en
+        payload[2] = 'n';
+        System.arraycopy(text, 0, payload, 3, text.length);
+        NdefRecord record = new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], payload);
+        return new NdefMessage(new NdefRecord[]{record});
     }
 }
